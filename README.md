@@ -1,87 +1,92 @@
-# Momentum Continuation Pro Algo (0-DTE Momentum Continuation Pro v4)
+# Momentum Continuation Pro Algo (0-DTE Friendly)
 
-Rule-based momentum + structure confirmation indicator for TradingView (Pine Script v6).
+Rule-based momentum continuation indicator for TradingView, written in Pine Script v6.
 
-**This is NOT a signal service.**
-It’s a decision-support tool designed to help identify **momentum continuation conditions** and avoid low-quality chop.
-
----
-
-## What it’s designed for
-- Momentum continuation trades (not reversals)
-- Intraday trading, including 0-DTE style momentum windows
-- Traders who already use rules + risk management
-- Filtering low-quality trades (saying “NO” more than “YES”)
+This is a **confirmation and context tool**, not a signal generator.
 
 ---
 
-## What it checks (high-level)
-- EMA structure alignment (fast vs slow)
-- Momentum relative to EMAs
-- VWAP positioning (optional)
-- Volume confirmation vs volume MA
-- ATR expansion vs ATR MA
-- Higher timeframe bias (15m EMA alignment, optional)
-- Time-of-day filter (built-in)
+## 📈 About
+
+Momentum Continuation Pro Algo is designed to help traders identify continuation-style setups by evaluating structure, momentum, volume, and volatility.
+The focus is *confirmation over prediction* — you trade only when conditions align, not when you hope they do.
+
+This tool is released for **free use**.
 
 ---
 
-## Setup quality labels
-- **A+ BUY / A+ SELL**: Strong alignment across structure + momentum + VWAP + HTF bias + candle strength  
-- **B BUY / B SELL**: Momentum present, but missing strength components (requires discretion)
+## 🧠 Key Features
+
+- EMA trend structure (fast vs slow)
+- Optional VWAP filter
+- Higher timeframe bias (15m) confirmation
+- Volume and ATR-based strength filters
+- Built-in time filter to reduce noise
+- A+ and B setup scoring for trade quality
 
 ---
 
-## Time filter (important)
-The script includes a time filter to focus on higher-quality intraday windows and reduce noise.
-This is intentional to help prevent overtrading.
+## 📊 How It Works
+
+The script examines multiple confirmation inputs (EMAs, momentum, VWAP, volume, ATR, and HTF bias).  
+When conditions align with high confidence, it marks:
+
+- **A+ BUY / A+ SELL**  
+- **B BUY / B SELL**
+
+These labels are intended as *context confirmations*, not signals.
 
 ---
 
-## When NOT to use this
-- Choppy / range-bound market conditions
+## ⏱️ Best Used When
+
+- Market direction is clear
+- Volume supports momentum
+- You already have a bias / plan
+- You use rules and risk controls
+
+Avoid relying on this tool in:
 - Low-volume drift
-- As a standalone system without a risk plan
-- If you’re chasing candles
-
-No indicator replaces discipline.
+- Choppy range markets
+- Random, late-session moves
 
 ---
 
-## Risk & exit logic
-The script tracks a position state and resets when:
-- Momentum breaks (price crosses EMA fast against you)
-- VWAP flips against you (if enabled)
-- ATR-based protection threshold is hit
+## 📥 Installation (TradingView)
 
-You still must control:
-- Position sizing
-- Max loss rules
-- Daily trade limits
-
----
-
-## How to install (TradingView)
 1. Open TradingView
 2. Go to **Pine Editor**
-3. Copy the code from `MomentumContinuationProAlgo.pine`
+3. Copy contents of `MomentumContinuationProAlgo.pine`
 4. Paste into Pine Editor
-5. Click **Add to Chart**
-6. Adjust settings (EMA lengths, VWAP/HTF toggles) as desired
+5. Save and **Add to Chart**
+6. Adjust inputs as needed
 
 ---
 
-## Inputs (defaults)
-- EMA Fast: 9
-- EMA Slow: 21
-- Volume MA Length: 20
-- ATR Length: 14
-- ATR Premium Protection: 0.75
-- Use VWAP: true
-- Use 15m HTF Bias: true
+## 🛠️ Inputs (Defaults)
+
+| Setting | Default |
+|--------|---------|
+| EMA Fast | 9 |
+| EMA Slow | 21 |
+| Volume MA Length | 20 |
+| ATR Length | 14 |
+| ATR Premium Protection | 0.75 |
+| Use VWAP | true |
+| Use 15m HTF Bias | true |
 
 ---
 
-## Disclaimer
-This software is provided for educational purposes only and **is not financial advice**.
-Trading options involves significant risk. Use at your own risk.
+## ⚠️ Disclaimer
+
+This script is provided for educational purposes and **is not financial advice**.
+Trading involves risk. Use at your own risk.
+
+Rules > indicators.  
+Structure > emotion.
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License — see `LICENSE` for details.
