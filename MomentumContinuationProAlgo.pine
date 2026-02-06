@@ -1,0 +1,157 @@
+// Momentum Continuation Pro Algo
+// Free use (GitHub release)
+// Purpose: Momentum + structure confirmation tool (not signals)
+// Notes: Designed for continuation conditions; avoid chop/range
+// Use at your own risk. Not financial advice.
+
+
+//@version=6
+indicator("0-DTE Momentum Continuation Pro v4 (A+)", overlay=true)
+
+//━━━━━━━━━━━━━━━━━━━
+// INPUTS
+//━━━━━━━━━━━━━━━━━━━
+emaFastLen = input.int(9, "EMA Fast")
+emaSlowLen = input.int(21, "EMA Slow")
+
+volLen = input.int(20, "Volume MA Length")
+atrLen = input.int(14, "ATR Length")
+atrStopMult = input.float(0.75, "ATR Premium Protection")
+
+useVWAP = input.bool(true, "Use VWAP")
+useHTF = input.bool(true, "Use 15m HTF Bias")
+
+//━━━━━━━━━━━━━━━━━━━
+// TIME FILTER (0-DTE SAFE)
+//━━━━━━━━━━━━━━━━━━━
+tradeSession =
+     (hour(time) == 9 and minute(time) >= 35) or
+     (hour(time) > 9 and hour(time) < 11) or
+     (hour(time) == 11 and minute(time) <= 30) or
+     (hour(time) >= 13 and hour(time) < 15) or
+     (hour(time) == 15 and minute(time) <= 30)
+
+//━━━━━━━━━━━━━━━━━━━
+// INDICATORS
+//━━━━━━━━━━━━━━━━━━━
+emaFast = ta.ema(close, emaFastLen)
+emaSlow = ta.ema(close, emaSlowLen)
+vwapVal = ta.vwap(hlc3)
+
+atr = ta.atr(atrLen)
+atrMA = ta.sma(atr, atrLen)
+
+volMA = ta.sma(volume, volLen)
+highVolume = volume > volMA
+
+//━━━━━━━━━━━━━━━━━━━
+// HTF BIAS (NON-REPAINT)
+//━━━━━━━━━━━━━━━━━━━
+htfEmaFast = request.security(syminfo.tickerid, "15", ta.ema(close, emaFastLen))
+htfEmaSlow = request.security(syminfo.tickerid, "15", ta.ema(close, emaSlowLen))
+
+htfBull = not useHTF or htfEmaFast > htfEmaSlow
+htfBear = not useHTF or htfEmaFast < htfEmaSlow
+
+//━━━━━━━━━━━━━━━━━━━
+// MOMENTUM LOGIC
+//━━━━━━━━━━━━━━━━━━━
+bullTrend = emaFast > emaSlow
+bearTrend = emaFast < emaSlow
+
+bullMomentum = close > emaFast and close > emaSlow
+bearMomentum = close < emaFast and close < emaSlow
+
+vwapBull = not useVWAP or close > vwapVal
+vwapBear = not useVWAP or close < vwapVal
+
+atrExpanding = atr > atrMA
+
+strongBullCandle = close > open and close > high - (high - low) * 0.3
+strongBearCandle = close < open and close < low + (high - low) * 0.3
+
+//━━━━━━━━━━━━━━━━━━━
+// TREND STRENGTH SCORE (0–100)
+//━━━━━━━━━━━━━━━━━━━
+emaStrength = math.min(25, math.abs(emaFast - emaSlow) / atr * 25)
+vwapStrength = math.min(25, math.abs(close - vwapVal) / atr * 25)
+volStrength = highVolume ? 25 : 0
+atrStrength = atrExpanding ? 25 : 0
+
+trendScore = emaStrength + vwapStrength + volStrength + atrStrength
+
+isAPlus = trendScore >= 75
+isBPlus = trendScore >= 60 and trendScore < 75
+
+//━━━━━━━━━━━━━━━━━━━
+// ENTRY SIGNALS
+//━━━━━━━━━━━━━━━━━━━
+buySignal =
+     tradeSession and
+     bullTrend and
+     bullMomentum and
+     vwapBull and
+     strongBullCandle and
+     htfBull
+
+sellSignal =
+     tradeSession and
+     bearTrend and
+     bearMomentum and
+     vwapBear and
+     strongBearCandle and
+     htfBear
+
+//━━━━━━━━━━━━━━━━━━━
+// POSITION TRACKING
+//━━━━━━━━━━━━━━━━━━━
+var int position = 0
+var float entryPrice = na
+
+if buySignal and position == 0
+    position := 1
+    entryPrice := close
+
+if sellSignal and position == 0
+    position := -1
+    entryPrice := close
+
+exitLong =
+     position == 1 and (
+         close < emaFast or
+         (useVWAP and close < vwapVal) or
+         close < entryPrice - atr * atrStopMult
+     )
+
+exitShort =
+     position == -1 and (
+         close > emaFast or
+         (useVWAP and close > vwapVal) or
+         close > entryPrice + atr * atrStopMult
+     )
+
+if exitLong or exitShort
+    position := 0
+    entryPrice := na
+
+//━━━━━━━━━━━━━━━━━━━
+// VISUALS
+//━━━━━━━━━━━━━━━━━━━
+plot(emaFast, color=color.orange, linewidth=2)
+plot(emaSlow, color=color.blue, linewidth=2)
+plot(useVWAP ? vwapVal : na, color=color.purple, linewidth=2)
+
+plotshape(buySignal and isAPlus, style=shape.labelup,
+     color=color.lime, text="A+ BUY", location=location.belowbar)
+
+plotshape(buySignal and isBPlus, style=shape.labelup,
+     color=color.green, text="B BUY", location=location.belowbar)
+
+plotshape(sellSignal and isAPlus, style=shape.labeldown,
+     color=color.red, text="A+ SELL", location=location.abovebar)
+
+plotshape(sellSignal and isBPlus, style=shape.labeldown,
+     color=color.maroon, text="B SELL", location=location.abovebar)
+
+plotshape(exitLong or exitShort, style=shape.xcross,
+     color=color.yellow, size=size.small)
