@@ -1,3 +1,7 @@
+![GitHub license](https://img.shields.io/github/license/bptrades/0dte-momentum-continuation-pro)
+![GitHub issues](https://img.shields.io/github/issues/bptrades/0dte-momentum-continuation-pro)
+
+
 # Momentum Continuation Pro Algo (0-DTE Friendly)
 
 Rule-based momentum continuation indicator for TradingView, written in Pine Script v6.
